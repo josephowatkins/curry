@@ -19,17 +19,14 @@
 
 (defmacro fn
   [binders & body]
-  (if (vector? binders)
-    nil
+  (when-not (vector? binders)
     (throw (IllegalArgumentException. "Second argument to defn must be in a vector")))
   (let [fn-name (gensym "curried")]
     `(clojure.core/fn ~fn-name ~@(map (partial build-arity fn-name) (calculate-arity binders)) ([~@binders] ~@body))))
 
 (defmacro defn [name binders & body]
-  (if (instance? clojure.lang.Symbol name)
-    nil
+  (when-not (instance? clojure.lang.Symbol name)
     (throw (IllegalArgumentException. "First argument to defn must be a symbol")))
-  (if (vector? binders)
-    nil
+  (when-not (vector? binders)
     (throw (IllegalArgumentException. "Second argument to defn must be in a vector")))
   `(def ~name (fn [~@binders] ~@body)))

@@ -77,15 +77,7 @@
   (-prop-eq [this prop value]))
 
 (extend-protocol Props
-  clojure.lang.IPersistentMap
-  (-prop [this prop]
-    (get this prop))
-  (-prop-or [this default prop]
-    (get this prop default))
-  (-prop-eq [this prop value]
-    (= (get this prop) value))
-
-  clojure.lang.IPersistentVector
+  clojure.lang.Associative
   (-prop [this prop]
     (get this prop))
   (-prop-or [this default prop]
@@ -108,15 +100,7 @@
   (-path-eq [this path value]))
 
 (extend-protocol Paths
-  clojure.lang.IPersistentMap
-  (-path [this path]
-    (get-in this path))
-  (-path-or [this default path]
-    (get-in this path default))
-  (-path-eq [this path value]
-    (= (get-in this path) value))
-
-  clojure.lang.IPersistentVector
+  clojure.lang.Associative
   (-path [this path]
     (get-in this path))
   (-path-or [this default path]
@@ -136,12 +120,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; assoc, assocPath, dissoc, dissocPath
 
-(defprotocol Associate
-  (-assoc      [this prop value])
-  (-assoc-path [this path value]))
+(defprotocol Associative
+  "Curried implementations of assoc, assoc-path, dissoc & dissoc-path"
+  (-assoc       [this prop value])
+  (-assoc-path  [this path value]))
 
-(extend-protocol Associate
-  clojure.lang.IPersistentMap
+(extend-protocol Associative
+  clojure.lang.Associative
   (-assoc [this prop value]
     (clojure.core/assoc this prop value))
   (-assoc-path [this path value]
@@ -153,19 +138,28 @@
 (defn assoc-path [path value object]
   (-assoc-path object path value))
 
-
-(defprotocol Dissociate
+(defprotocol Dissociative
+  "Curried implementation of dissoc & dissoc-path. will work on 
+  all clojure.lang.Associative."
   (-dissoc      [this prop])
   (-dissoc-path [this path]))
 
 (declare dissoc)
 
-(extend-protocol Dissociate
+(extend-protocol Dissociative
   clojure.lang.IPersistentMap
   (-dissoc [this prop]
     (clojure.core/dissoc this prop))
   (-dissoc-path [this path]
-    (update-in this (vec (butlast path)) (dissoc (last path)))))
+    (update-in this (vec (butlast path)) (dissoc (last path))))
+
+  clojure.lang.IPersistentVector
+  (-dissoc [this prop]
+    (vec (concat (subvec this 0 prop) (subvec this (inc prop)))))
+  (-dissoc-path [this path]
+    (if (= (count path) 1)
+      (dissoc (last path) this)
+      (update-in this (vec (butlast path)) (dissoc (last path))))))
 
 (defn dissoc [prop object]
   (-dissoc object prop))
