@@ -3,6 +3,17 @@
   (:require [curry.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO:
+;;
+;; Fix the docs!
+;;
+;; Implement:
+;;
+;; until :: (a -> Bool) -> (a -> a) -> a -> a
+;; zip-with :: (a -> b -> c) -> [a] -> [b] -> [c]
+;; 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fmap
 
 (defprotocol Functor
@@ -121,7 +132,7 @@
 ;; assoc, assocPath, dissoc, dissocPath
 
 (defprotocol Associative
-  "Curried implementations of assoc, assoc-path, dissoc & dissoc-path"
+  "Curried implementations of assoc & assoc-path"
   (-assoc       [this prop value])
   (-assoc-path  [this path value]))
 
@@ -139,7 +150,7 @@
   (-assoc-path object path value))
 
 (defprotocol Dissociative
-  "Curried implementation of dissoc & dissoc-path. will work on 
+  "Curried implementation of dissoc & dissoc-path. Will work on 
   all clojure.lang.Associative."
   (-dissoc      [this prop])
   (-dissoc-path [this path]))
@@ -166,3 +177,35 @@
 
 (defn dissoc-path [path object]
   (-dissoc-path object path))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zip-with (a -> b -> c) -> [a] -> [b] -> [c]
+
+(defprotocol Zippable
+  (-zip-with [xs ys f]))
+
+(extend-protocol Zippable
+  clojure.lang.ISeq
+  (-zip-with [this ys f]
+    (map f this ys))
+  
+  clojure.lang.IPersistentVector
+  (-zip-with [this ys f]
+    (into (empty this) (map f this ys))))
+
+(defn zip-with [f xs ys]
+  (-zip-with xs ys f))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; until :: (a -> Bool) -> (a -> a) -> a -> a
+
+(defn until [pred f x]
+  (if (pred x) x (recur pred f (f x))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; unless :: (a -> Bool) -> (a -> a) -> a -> a
+
+(defn unless [pred f x]
+  (if (pred x) x (f x)))

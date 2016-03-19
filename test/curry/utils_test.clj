@@ -140,3 +140,40 @@
           actual (dissoc-path-fn m)]
       (is (= actual expected)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zip-with
+
+(deftest zip-with-test
+  (testing "zip-with seq"
+    (let [s1 (range 5)
+          s2 (range 5)
+          expected '(0 2 4 6 8)
+          zip-fn (c/zip-with +)
+          actual (zip-fn s1 s2)]
+      (is (= actual expected))))
+
+  (testing "zip-with vector"
+    (let [v1 [0 1 2 3 4]
+          v2 [0 1 2 3 4]
+          expected [0 2 4 6 8]
+          zip-fn (c/zip-with +)
+          actual (zip-fn v1 v2)]
+      (is (= actual expected))
+      (is (vector? actual)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; until
+
+(deftest until-test
+  (testing "until"
+    (let [expected 11
+          until-fn (c/until #(> % 10) inc)
+          actual (until-fn 0)]
+      (is (= actual expected)))))
+
+(deftest unless-test
+  (testing "unless"
+    (let [expected [10]
+          unless-fn (c/unless vector? vector)
+          actual (unless-fn 10)]
+      (is (= actual expected)))))
